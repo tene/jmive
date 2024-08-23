@@ -6,6 +6,8 @@ use bevy::{
 
 #[derive(Component)]
 struct Velocity(Vec2);
+#[derive(Component)]
+struct Force(Vec2);
 pub struct LifePlugin;
 
 impl Plugin for LifePlugin {
@@ -39,10 +41,22 @@ fn setup(
     ));
 }
 
-fn update(time: Res<Time>, mut query: Query<(&mut Velocity, &mut Transform)>) {
+fn update(
+    time: Res<Time>,
+    windows: Query<&Window>,
+    mut query: Query<(&mut Velocity, &mut Transform)>,
+) {
+    let window = windows.single();
+    let max_extent = 0.5 * window.size();
     for (mut vel, mut trans) in &mut query {
         trans.translation.x += vel.0.x * time.delta_seconds();
         trans.translation.y += vel.0.y * time.delta_seconds();
+        if trans.translation.x.abs() > max_extent.x {
+            vel.0.x *= -1.0;
+        }
+        if trans.translation.y.abs() > max_extent.y {
+            vel.0.y *= -1.0;
+        }
     }
 }
 
