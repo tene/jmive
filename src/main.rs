@@ -14,7 +14,7 @@ pub struct LifePlugin;
 impl Plugin for LifePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup);
-        app.add_systems(Update, update);
+        app.add_systems(Update, (calculate_forces, update).chain());
     }
 }
 
@@ -46,18 +46,33 @@ fn setup(
                 ..default()
             },
             Velocity(Vec2 { x: dx, y: dy }),
+            Force(Vec2 { x: 0.0, y: 0.0 }),
         ));
+    }
+}
+
+fn calculate_forces(mut query: Query<(&mut Force, &mut Transform)>) {
+    let mut rng = rand::thread_rng();
+    for (mut force, trans) in &mut query {
+        let dx = rng.gen_range(-1.0..1.0);
+        let dy = rng.gen_range(-1.0..1.0);
+        force.0.x += dx;
+        force.0.y += dy;
     }
 }
 
 fn update(
     time: Res<Time>,
     windows: Query<&Window>,
-    mut query: Query<(&mut Velocity, &mut Transform)>,
+    mut query: Query<(&mut Velocity, &mut Force, &mut Transform)>,
 ) {
     let window = windows.single();
     let max_extent = 0.5 * window.size();
-    for (mut vel, mut trans) in &mut query {
+    for (mut vel, mut force, mut trans) in &mut query {
+        vel.0.x += force.0.x;
+        vel.0.y += force.0.y;
+        force.0.x = 0.0;
+        force.0.y = 0.0;
         trans.translation.x += vel.0.x * time.delta_seconds();
         trans.translation.y += vel.0.y * time.delta_seconds();
         if trans.translation.x.abs() > max_extent.x {
