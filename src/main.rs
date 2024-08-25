@@ -51,14 +51,34 @@ fn setup(
     }
 }
 
-fn calculate_forces(mut query: Query<(&mut Force, &mut Transform)>) {
+fn calculate_forces(time: Res<Time>, mut query: Query<(&Transform, &mut Force)>) {
     let mut rng = rand::thread_rng();
-    for (mut force, trans) in &mut query {
-        let dx = rng.gen_range(-1.0..1.0);
-        let dy = rng.gen_range(-1.0..1.0);
-        force.0.x += dx;
-        force.0.y += dy;
+    let max_distance = 100.0;
+    let dt = time.delta_seconds();
+    let mut iter = query.iter_combinations_mut();
+    while let Some([(t1, mut f1), (t2, f2)]) = iter.fetch_next() {
+        let distance = t1.translation.distance(t2.translation);
+        if distance < max_distance {
+            let strength = dt * 100.0 / distance;
+            let dir = (t2.translation - t1.translation).normalize() * strength;
+            f1.0.x += dir.x;
+            f1.0.y += dir.y;
+        }
     }
+    //for [(mut force, trans), (_, t2)] in query.iter_combinations_mut() {}
+    //for ([mut force, _], [trans, t2]) in query.iter_combinations_mut() {}
+    // for (mut force, trans) in &mut query {
+    //     for t2 in &q2 {
+    //         let distance = trans.translation.distance(t2.translation);
+    //         if distance < max_distance {
+    //             let dir = (t2.translation - trans.translation).normalize();
+    //         }
+    //     }
+    //     let dx = rng.gen_range(-1.0..1.0);
+    //     let dy = rng.gen_range(-1.0..1.0);
+    //     force.0.x += dx;
+    //     force.0.y += dy;
+    // }
 }
 
 fn update(
@@ -68,13 +88,17 @@ fn update(
 ) {
     let window = windows.single();
     let max_extent = 0.5 * window.size();
+    let dt = time.delta_seconds();
     for (mut vel, mut force, mut trans) in &mut query {
+        // friction
+        vel.0.x *= (1.0 - 0.1 * dt);
+        vel.0.y *= (1.0 - 0.1 * dt);
         vel.0.x += force.0.x;
         vel.0.y += force.0.y;
         force.0.x = 0.0;
         force.0.y = 0.0;
-        trans.translation.x += vel.0.x * time.delta_seconds();
-        trans.translation.y += vel.0.y * time.delta_seconds();
+        trans.translation.x += vel.0.x * dt;
+        trans.translation.y += vel.0.y * dt;
         if trans.translation.x.abs() > max_extent.x {
             vel.0.x *= -1.0;
             let delta = trans.translation.x.abs() - max_extent.x;
