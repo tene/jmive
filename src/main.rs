@@ -3,6 +3,7 @@ use bevy::{
     prelude::*,
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
+use rand::prelude::*;
 
 #[derive(Component)]
 struct Velocity(Vec2);
@@ -19,26 +20,34 @@ impl Plugin for LifePlugin {
 
 fn setup(
     mut commands: Commands,
+    windows: Query<&Window>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     commands.spawn(Camera2dBundle::default());
 
-    let circle = Mesh2dHandle(meshes.add(Circle { radius: 50.0 }));
-    let color = Color::hsl(0.0, 0.95, 0.7);
+    let mut rng = rand::thread_rng();
+    let window = windows.single();
+    let size = 0.5 * window.size();
 
-    commands.spawn((
-        MaterialMesh2dBundle {
-            mesh: circle,
-            material: materials.add(color),
-            transform: Transform::from_xyz(
-                // Distribute shapes from -X_EXTENT/2 to +X_EXTENT/2.
-                0.0, 0.0, 0.0,
-            ),
-            ..default()
-        },
-        Velocity(Vec2 { x: 10.0, y: 50.0 }),
-    ));
+    let circle = Mesh2dHandle(meshes.add(Circle { radius: 5.0 }));
+    let color = materials.add(Color::hsl(0.0, 0.95, 0.7));
+
+    for i in 1..10 {
+        let x = rng.gen_range(0.0..size.x) - size.x / 2.0;
+        let y = rng.gen_range(0.0..size.y) - size.y / 2.0;
+        let dx = rng.gen_range(0.0..50.0);
+        let dy = rng.gen_range(0.0..50.0);
+        commands.spawn((
+            MaterialMesh2dBundle {
+                mesh: circle.clone(),
+                material: color.clone(),
+                transform: Transform::from_xyz(x, y, 0.0),
+                ..default()
+            },
+            Velocity(Vec2 { x: dx, y: dy }),
+        ));
+    }
 }
 
 fn update(
@@ -53,9 +62,21 @@ fn update(
         trans.translation.y += vel.0.y * time.delta_seconds();
         if trans.translation.x.abs() > max_extent.x {
             vel.0.x *= -1.0;
+            let delta = trans.translation.x.abs() - max_extent.x;
+            if trans.translation.x.is_sign_negative() {
+                trans.translation.x += delta;
+            } else {
+                trans.translation.x -= delta;
+            }
         }
         if trans.translation.y.abs() > max_extent.y {
             vel.0.y *= -1.0;
+            let delta = trans.translation.y.abs() - max_extent.y;
+            if trans.translation.y.is_sign_negative() {
+                trans.translation.y += delta;
+            } else {
+                trans.translation.y -= delta;
+            }
         }
     }
 }
