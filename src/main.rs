@@ -28,16 +28,16 @@ fn setup(
 
     let mut rng = rand::thread_rng();
     let window = windows.single();
-    let size = 0.5 * window.size();
+    let size = window.size();
 
     let circle = Mesh2dHandle(meshes.add(Circle { radius: 5.0 }));
-    let color = materials.add(Color::hsl(0.0, 0.95, 0.7));
 
-    for i in 1..10 {
+    for i in 1..1000 {
         let x = rng.gen_range(0.0..size.x) - size.x / 2.0;
         let y = rng.gen_range(0.0..size.y) - size.y / 2.0;
-        let dx = rng.gen_range(0.0..50.0);
-        let dy = rng.gen_range(0.0..50.0);
+        let dx = rng.gen_range(-50.0..50.0);
+        let dy = rng.gen_range(-50.0..50.0);
+        let color = materials.add(Color::hsl(rng.gen_range(0.0..360.0), 0.95, 0.7));
         commands.spawn((
             MaterialMesh2dBundle {
                 mesh: circle.clone(),
