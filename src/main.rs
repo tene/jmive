@@ -54,31 +54,21 @@ fn setup(
 fn calculate_forces(time: Res<Time>, mut query: Query<(&Transform, &mut Force)>) {
     let mut rng = rand::thread_rng();
     let max_distance = 100.0;
+    let min_distance = 10.0;
     let dt = time.delta_seconds();
     let mut iter = query.iter_combinations_mut();
     while let Some([(t1, mut f1), (t2, f2)]) = iter.fetch_next() {
         let distance = t1.translation.distance(t2.translation);
         if distance < max_distance {
-            let strength = dt * 100.0 / distance;
+            let mut strength = dt * 100.0 / distance;
+            if distance < min_distance {
+                strength *= -1.0;
+            }
             let dir = (t2.translation - t1.translation).normalize() * strength;
             f1.0.x += dir.x;
             f1.0.y += dir.y;
         }
     }
-    //for [(mut force, trans), (_, t2)] in query.iter_combinations_mut() {}
-    //for ([mut force, _], [trans, t2]) in query.iter_combinations_mut() {}
-    // for (mut force, trans) in &mut query {
-    //     for t2 in &q2 {
-    //         let distance = trans.translation.distance(t2.translation);
-    //         if distance < max_distance {
-    //             let dir = (t2.translation - trans.translation).normalize();
-    //         }
-    //     }
-    //     let dx = rng.gen_range(-1.0..1.0);
-    //     let dy = rng.gen_range(-1.0..1.0);
-    //     force.0.x += dx;
-    //     force.0.y += dy;
-    // }
 }
 
 fn update(
