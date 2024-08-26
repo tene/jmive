@@ -91,21 +91,13 @@ fn update(
         trans.translation.y += vel.0.y * dt;
         if trans.translation.x.abs() > max_extent.x {
             vel.0.x *= -1.0;
-            let delta = trans.translation.x.abs() - max_extent.x;
-            if trans.translation.x.is_sign_negative() {
-                trans.translation.x += delta;
-            } else {
-                trans.translation.x -= delta;
-            }
+            let delta = (trans.translation.x.abs() - max_extent.x).copysign(trans.translation.x);
+            trans.translation.x -= delta;
         }
         if trans.translation.y.abs() > max_extent.y {
             vel.0.y *= -1.0;
-            let delta = trans.translation.y.abs() - max_extent.y;
-            if trans.translation.y.is_sign_negative() {
-                trans.translation.y += delta;
-            } else {
-                trans.translation.y -= delta;
-            }
+            let delta = (trans.translation.y.abs() - max_extent.y).copysign(trans.translation.y);
+            trans.translation.y -= delta;
         }
     }
 }
