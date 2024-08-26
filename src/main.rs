@@ -32,12 +32,13 @@ fn setup(
 
     let circle = Mesh2dHandle(meshes.add(Circle { radius: 5.0 }));
 
-    for i in 1..1000 {
+    for _i in 1..1000 {
         let x = rng.gen_range(0.0..size.x) - size.x / 2.0;
         let y = rng.gen_range(0.0..size.y) - size.y / 2.0;
         let dx = rng.gen_range(-50.0..50.0);
         let dy = rng.gen_range(-50.0..50.0);
-        let color = materials.add(Color::hsl(rng.gen_range(0.0..360.0), 0.95, 0.7));
+        let hue = rng.gen_range(0.0..360.0);
+        let color = materials.add(Color::hsl(hue, 0.95, 0.7));
         commands.spawn((
             MaterialMesh2dBundle {
                 mesh: circle.clone(),
@@ -52,12 +53,11 @@ fn setup(
 }
 
 fn calculate_forces(time: Res<Time>, mut query: Query<(&Transform, &mut Force)>) {
-    let mut rng = rand::thread_rng();
     let max_distance = 100.0;
     let min_distance = 10.0;
     let dt = time.delta_seconds();
     let mut iter = query.iter_combinations_mut();
-    while let Some([(t1, mut f1), (t2, f2)]) = iter.fetch_next() {
+    while let Some([(t1, mut f1), (t2, _f2)]) = iter.fetch_next() {
         let distance = t1.translation.distance(t2.translation);
         if distance < max_distance {
             let mut strength = dt * 100.0 / distance;
@@ -81,8 +81,8 @@ fn update(
     let dt = time.delta_seconds();
     for (mut vel, mut force, mut trans) in &mut query {
         // friction
-        vel.0.x *= (1.0 - 0.1 * dt);
-        vel.0.y *= (1.0 - 0.1 * dt);
+        vel.0.x *= 1.0 - 0.1 * dt;
+        vel.0.y *= 1.0 - 0.1 * dt;
         vel.0.x += force.0.x;
         vel.0.y += force.0.y;
         force.0.x = 0.0;
