@@ -20,12 +20,12 @@ impl Plugin for LifePlugin {
     fn build(&self, app: &mut App) {
         let mut rng = rand::thread_rng();
         let mut fm: [[f32; COLORS]; COLORS] = [
-            [1.0, -1.0, 0.0, 0.0, 0.0, 0.0],
-            [0.0, 1.0, -1.0, 0.0, 0.0, 0.0],
-            [0.0, 0.0, 1.0, -1.0, 0.0, 0.0],
-            [0.0, 0.0, 0.0, 1.0, -1.0, 0.0],
-            [0.0, 0.0, 0.0, 0.0, 1.0, -1.0],
-            [-1.0, 0.0, 0.0, 0.0, 0.0, 1.0],
+            [1.0, -1.0, 1.0, 0.0, 0.0, 0.0],
+            [0.0, 1.0, -1.0, 1.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0, -1.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0, -1.0, 1.0],
+            [1.0, 0.0, 0.0, 0.0, 1.0, -1.0],
+            [-1.0, 1.0, 0.0, 0.0, 0.0, 1.0],
         ];
         for i in 0..COLORS {
             for j in 0..COLORS {
@@ -90,9 +90,9 @@ fn calculate_forces(
     fm: Res<ForceMap>,
     mut query: Query<(&Transform, &mut Force, &Type)>,
 ) {
-    let max_distance = 100.0;
-    let min_distance = 10.0;
-    let force_strength = 50.0;
+    let max_distance = 60.0;
+    let min_distance = 20.0;
+    let force_strength = 2.0;
     let dt = time.delta_seconds();
     let mut iter = query.iter_combinations_mut();
     while let Some([(t1, mut f1, Type(type1)), (t2, mut f2, Type(type2))]) = iter.fetch_next() {
@@ -122,8 +122,8 @@ fn update(
     let dt = time.delta_seconds();
     for (mut vel, mut force, mut trans) in &mut query {
         // friction
-        vel.0.x *= 1.0 - 0.1 * dt;
-        vel.0.y *= 1.0 - 0.1 * dt;
+        vel.0.x *= 1.0 - 0.3 * dt;
+        vel.0.y *= 1.0 - 0.3 * dt;
         vel.0.x += force.0.x;
         vel.0.y += force.0.y;
         force.0.x = 0.0;
