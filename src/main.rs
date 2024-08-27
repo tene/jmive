@@ -31,6 +31,7 @@ impl Plugin for LifePlugin {
             for j in 0..COLORS {
                 fm[i][j] = rng.gen_range(-1.0..1.0);
             }
+            fm[i][i] = rng.gen_range(0.2..1.0);
         }
         app.insert_resource(ForceMap(fm));
         app.add_systems(Startup, setup);
@@ -92,7 +93,7 @@ fn calculate_forces(
 ) {
     let max_distance = 60.0;
     let min_distance = 20.0;
-    let force_strength = 2.0;
+    let force_strength = 15.0;
     let dt = time.delta_seconds();
     let mut iter = query.iter_combinations_mut();
     while let Some([(t1, mut f1, Type(type1)), (t2, mut f2, Type(type2))]) = iter.fetch_next() {
@@ -122,8 +123,8 @@ fn update(
     let dt = time.delta_seconds();
     for (mut vel, mut force, mut trans) in &mut query {
         // friction
-        vel.0.x *= 1.0 - 0.3 * dt;
-        vel.0.y *= 1.0 - 0.3 * dt;
+        vel.0.x *= 1.0 - 0.4 * dt;
+        vel.0.y *= 1.0 - 0.4 * dt;
         vel.0.x += force.0.x;
         vel.0.y += force.0.y;
         force.0.x = 0.0;
