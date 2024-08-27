@@ -122,9 +122,10 @@ fn update(
     let max_extent = 0.5 * window.size();
     let dt = time.delta_seconds();
     for (mut vel, mut force, mut trans) in &mut query {
-        // friction
-        vel.0.x *= 1.0 - 0.4 * dt;
-        vel.0.y *= 1.0 - 0.4 * dt;
+        let friction = 0.4;
+        let bounce = 0.9;
+        vel.0.x *= 1.0 - friction * dt;
+        vel.0.y *= 1.0 - friction * dt;
         vel.0.x += force.0.x;
         vel.0.y += force.0.y;
         force.0.x = 0.0;
@@ -132,12 +133,12 @@ fn update(
         trans.translation.x += vel.0.x * dt;
         trans.translation.y += vel.0.y * dt;
         if trans.translation.x.abs() > max_extent.x {
-            vel.0.x *= -1.0;
+            vel.0.x *= -1.0 * bounce;
             let delta = (trans.translation.x.abs() - max_extent.x).copysign(trans.translation.x);
             trans.translation.x -= delta;
         }
         if trans.translation.y.abs() > max_extent.y {
-            vel.0.y *= -1.0;
+            vel.0.y *= -1.0 * bounce;
             let delta = (trans.translation.y.abs() - max_extent.y).copysign(trans.translation.y);
             trans.translation.y -= delta;
         }
